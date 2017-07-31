@@ -21,6 +21,24 @@ public class Maze {
 		buildMaze(input);
 	}
 	
+	public Coordinate getStart(){
+		for(int row = 0; row < maze.length; ++row){
+			for(int column = 0; column < maze[row].length; ++column){
+				if(maze[row][column].toString().equals("o"))
+					return new Coordinate(row, column);
+			}
+		}
+		return null;
+	}
+	
+	public Square[][] getMaze(){
+		return maze;
+	}
+	
+	/**
+	 * Takes in user input to create a maze
+	 * @param input
+	 */
 	private void buildMaze(Scanner input){
 		System.out.println("MAZE MAP : \n'#' = Wall\n'.' = Open Space\n'o' = Start\n'*' = Finish\n");
 		String rowString = "";
@@ -45,5 +63,4 @@ public class Maze {
 		}
 		return mazeDisplay;
 	}
-	
 }
