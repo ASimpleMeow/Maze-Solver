@@ -7,12 +7,12 @@ import utils.Square;
 
 public class MazeSolver {
 
-	Agenda<Coordinate> stackAgenda;
+	Agenda<Coordinate> agenda;
 	List<Coordinate> visited;
 	Maze maze;
 	
-	public MazeSolver(Maze maze){
-		stackAgenda = new Stack<Coordinate>();
+	public MazeSolver(Maze maze, boolean solveStack){
+		agenda = (solveStack ? new Stack<Coordinate>() : new Queue<Coordinate>());
 		visited = new ArrayList<Coordinate>();
 		this.maze = maze;
 	}
@@ -20,12 +20,12 @@ public class MazeSolver {
 	public boolean solveMaze(){
 		Coordinate start = maze.getStart();
 		if(start != null){
-			stackAgenda.add(start);
+			agenda.add(start);
 			visited.add(start);
 		}
 		
-		while(!stackAgenda.isEmpty()){
-			Coordinate currentLocation = stackAgenda.remove();
+		while(!agenda.isEmpty()){
+			Coordinate currentLocation = agenda.remove();
 			if(!visited.contains(currentLocation)){
 				if (maze.getMaze()[currentLocation.getRow()][currentLocation.getColumn()] == Square.FINISH){
 					return true;
@@ -36,26 +36,26 @@ public class MazeSolver {
 			if(currentLocation.getRow()+1 < maze.getMaze().length){
 				if(maze.getMaze()[currentLocation.getRow()+1][currentLocation.getColumn()] != Square.WALL
 						&& !visited.contains(new Coordinate(currentLocation.getRow()+1,currentLocation.getColumn()))){
-					stackAgenda.add(new Coordinate(currentLocation.getRow()+1,currentLocation.getColumn()));
+					agenda.add(new Coordinate(currentLocation.getRow()+1,currentLocation.getColumn()));
 				}
 			}
 			if(currentLocation.getRow()-1 >= 0){
 				if(maze.getMaze()[currentLocation.getRow()-1][currentLocation.getColumn()] != Square.WALL
 						&& !visited.contains(new Coordinate(currentLocation.getRow()-1,currentLocation.getColumn()))){
-					stackAgenda.add(new Coordinate(currentLocation.getRow()-1,currentLocation.getColumn()));
+					agenda.add(new Coordinate(currentLocation.getRow()-1,currentLocation.getColumn()));
 				}
 			}
 			
 			if(currentLocation.getColumn()+1 < maze.getMaze()[currentLocation.getRow()].length){
 				if(maze.getMaze()[currentLocation.getRow()][currentLocation.getColumn()+1] != Square.WALL 
 						&& !visited.contains(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()+1))){
-					stackAgenda.add(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()+1));
+					agenda.add(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()+1));
 				}
 			}
 			if(currentLocation.getColumn()-1 >= 0){
 				if(maze.getMaze()[currentLocation.getRow()][currentLocation.getColumn()-1] != Square.WALL
 						&& !visited.contains(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()-1))){
-					stackAgenda.add(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()-1));
+					agenda.add(new Coordinate(currentLocation.getRow(),currentLocation.getColumn()-1));
 				}
 			}
 			
