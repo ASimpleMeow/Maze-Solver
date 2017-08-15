@@ -1,5 +1,16 @@
 package models;
 
+/**
+ * Interface for agenda used in solving mazes.
+ * The implementation for agenda will be in the form of 
+ * Stack and Queue.
+ * 
+ * @author Oleksandr Kononov
+ * @version 10-08-2017
+ *
+ * @param <T>
+ */
+
 public interface Agenda<T> {
 	
 	/**

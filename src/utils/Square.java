@@ -2,6 +2,15 @@ package utils;
 
 import java.awt.Color;
 
+/**
+ * Enum for Square which defines the Square types with 
+ * characters and color value
+ * 
+ * @author Oleksandr Kononov
+ * @version 14-08-2017
+ *
+ */
+
 public enum Square {
 	WALL ('#', Color.BLACK),
 	OPEN ('.', Color.BLUE),
@@ -31,11 +40,18 @@ public enum Square {
 		}
 	}
 	
+	/**
+	 * Return string value of Square
+	 */
 	@Override
 	public String toString(){
 		return String.valueOf(symbol);
 	}
 	
+	/**
+	 * 
+	 * @return Color for awt GUI
+	 */
 	public Color getColor(){
 		return color;
 	}

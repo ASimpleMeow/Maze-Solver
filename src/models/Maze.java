@@ -4,6 +4,16 @@ import java.util.Scanner;
 
 import utils.Square;
 
+/**
+ * Maze class to build the maze object which will contain the
+ * logical model of the maze made by user, and which MazeSovler constructor takes as 
+ * parameter to solve.
+ * 
+ * @author Oleksandr Kononov
+ * @version 10-08-2017
+ * @param <T>
+ */
+
 public class Maze {
 	
 	private Square[][] maze;
@@ -21,6 +31,10 @@ public class Maze {
 		buildMaze(input);
 	}
 	
+	/**
+	 * 
+	 * @return The Coordinate of a Square of type START
+	 */
 	public Coordinate getStart(){
 		for(int row = 0; row < maze.length; ++row){
 			for(int column = 0; column < maze[row].length; ++column){

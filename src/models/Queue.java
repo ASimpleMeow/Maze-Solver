@@ -3,6 +3,14 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Queue implementation using the Agenda interface
+ * 
+ * @author Oleksandr Kononov
+ * @version 10-08-2017
+ * @param <T>
+ */
+
 public class Queue<T> implements Agenda<T> {
 
 	List<T> list;

@@ -7,69 +7,171 @@ import javax.swing.border.*;
 
 import utils.Square;
 
+/**
+ * Graphical User Interface for the MazeSolver. No calculation is done here.
+ * This class is responsible only for displaying and taking information to and from 
+ * the user, and refers to MazeSolver to solve the maze.
+ * 
+ * @author Oleksandr Kononov
+ * @version 15-08-2017
+ *
+ */
+
 public class UserInterface implements ActionListener{
 	
 	private JFrame frame;
-	private JPanel mazePanel;
-	private JPanel optionPanel;
+	
+	private JPanel optionPanel;			//Option panel which contains buttons and text fields
+	private JTextField rowsTextField;
+	private JTextField columnsTextField;
+	
+	private JPanel mazePanel;			//Maze panel contains non-editable grid of text field
+										//used to display the maze to the user
 	
 	public UserInterface(int rows, int columns){
 		makeFrame(rows, columns);
 		frame.setVisible(true);
 	}
 	
+	/**
+	 * Create a JFrame window and setup all it's respective panels
+	 * 
+	 * @param rows Integer value for rows the maze has
+	 * @param columns Integer value for columns the maze has
+	 */
 	private void makeFrame(int rows, int columns){
+		
 		frame = new JFrame("Maze Solver");
+		rowsTextField = new JTextField("",5);
+		columnsTextField = new JTextField("",5);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 		JPanel contentPane = (JPanel)frame.getContentPane();
 		contentPane.setLayout(new BorderLayout(20, 20));
 		contentPane.setBorder(new EmptyBorder( 10, 10, 10, 10));
 		
-		optionPanel = new JPanel(new GridLayout(1, 3));
-		addButton(optionPanel, "Stack Solution");
-		addButton(optionPanel, "Queue Solution");
-		addButton(optionPanel, "Exit");
+		///////////////Options///////////////
+		optionPanel = new JPanel(new GridLayout(2, 0));
+		JPanel top = new JPanel(new GridLayout(1, 4));
+		JPanel bottom = new JPanel(new FlowLayout());
 		
-		mazePanel = new JPanel(new GridLayout(rows,columns));
-		makeMaze(mazePanel, rows, columns);
+		addButton(top, "Stack Solution");
+		addButton(top, "Queue Solution");
+		addButton(top, "About");
+		addButton(top, "Exit");
 		
+		bottom.add(new JLabel("Rows:"));
+		bottom.add(rowsTextField);
+		bottom.add(new JLabel("Columns:"));
+		bottom.add(columnsTextField);
+		addButton(bottom, "Resize");
+		
+		optionPanel.add(top);
+		optionPanel.add(bottom);
+		/////////////////////////////////////
+		
+		
+		//Create the maze grid using row and column
+		makeMaze(rows, columns);
+		
+		
+		//Finalise frame
 		contentPane.add(optionPanel, BorderLayout.NORTH);
 		contentPane.add(mazePanel);
 		frame.pack();
-		frame.setPreferredSize(new Dimension(400, 600));
+		frame.setPreferredSize(new Dimension(500, 800));
+		frame.setLocationRelativeTo(null);
 	}
 	
-	private void addButton(Container panel, String buttonText)
-	{
+	/**
+	 * Creates a button with an action listener and adds to the panel given in 
+	 * parameters
+	 * @param panel Which panel to add the button to
+	 * @param buttonText Text on the button
+	 */
+	private void addButton(Container panel, String buttonText){
 		JButton button = new JButton(buttonText);
 		button.addActionListener(this);
 		panel.add(button);
 	}
 	
+	/**
+	 * Catches action events sent by the buttons and responds to them
+	 * accordingly
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		String command = e.getActionCommand();
+		
+		if(command.equals("Resize")){		//Resize button pressed
+											//Resize maze with new rows and columns
+			int newRows = Integer.parseInt(rowsTextField.getText());
+			int newColumns = Integer.parseInt(columnsTextField.getText());
+			resizeMaze(newRows, newColumns);
+		}else if(command.equals("Exit")){	//Exit button pressed
+											//Close frame and exit program
+			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+			System.exit(0);
+		}else if(command.equals("About")){	//About button pressed
+											//Display the about information about MazeSolver
+			openAbout();
+		}
 		
 	}
 	
-	private void makeMaze(JPanel mazeFields, int rows, int columns){
+	/**
+	 * Makes a grid maze of non-editable, non-focusable text fields given the 
+	 * rows and columns Integer values - Uses the default WALL Square type to fill
+	 * each text field
+	 * @param rows
+	 * @param columns
+	 */
+	private void makeMaze(int rows, int columns){
+		
+		mazePanel = new JPanel(new GridLayout(rows,columns));
 		Font font = new Font("SansSerif", Font.BOLD, 20);
+		
+		//For every maze Square, setup it's values and parameters
 		for(int i = 0; i < rows*columns; ++i){
-			JTextField t = new JTextField(Square.WALL.toString());
-			t.setForeground(Square.WALL.getColor());
-			t.setFont(font);
-			t.setHorizontalAlignment(JTextField.CENTER);
-			t.setEditable(false);
-			t.addMouseListener(new MouseAdapter(){
-				public void mouseReleased(MouseEvent e){
-					cycleField(t);
+			JTextField t = new JTextField(Square.WALL.toString());	//Set Square type to WALL
+			t.setForeground(Square.WALL.getColor());				//Set text colour
+			t.setFont(font);										//Set font
+			t.setHorizontalAlignment(JTextField.CENTER);			//Set text alignment to CENTER
+			t.setEditable(false);									//Set text field non-editable
+			t.setFocusable(false);									//Set text field non-focusable
+			
+			t.addMouseListener(new MouseAdapter(){					//Add mouse click listener
+				public void mouseReleased(MouseEvent e){			//To change Square type
+					changeSquareType(t);
 				}
 			});
-			mazeFields.add(t);
+			mazePanel.add(t);
 		}
 	}
 	
-	private void cycleField(JTextField t){
+	/**
+	 * Resizes the maze text field grid given new row and column Integer values
+	 * @param newRows
+	 * @param newColumns
+	 */
+	private void resizeMaze(int newRows, int newColumns){
+		mazePanel.setVisible(false);
+		frame.getContentPane().remove(mazePanel);
+		makeMaze(newRows, newColumns);
+		frame.getContentPane().add(mazePanel);
+		frame.getContentPane().invalidate();
+		frame.getContentPane().validate();
+	}
+	
+	/**
+	 * Changes Square type to the next in-line Square type from enums of 
+	 * textfield t given
+	 * @param t
+	 */
+	private void changeSquareType(JTextField t){
+		
+		//Loop through all Square types until you meet current type
+		//increment to next index and set it as new Square type
 		for(int i=0; i<Square.values().length; ++i){
 			if (t.getText().equals(Square.values()[i].toString())){
 				Square temp = (Square.values()[++i % Square.values().length]);
@@ -78,5 +180,23 @@ public class UserInterface implements ActionListener{
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Open information dialog window and display About text
+	 */
+	private void openAbout(){
+		String about = 
+				"Maze Solver\n"+
+				"Author: Oleksandr Kononov\n\n"+
+				"Description: Click on the square to change the square type, create a maze\n"+
+				"solve the maze by clicking the button\n\n"+
+				"Square Types:\n"+
+				"# = WALL\n"+
+				". = OPEN\n"+
+				"o = START\n"+
+				"* = FINISH\n";
+		JOptionPane.showMessageDialog(frame, about,"About",
+		        JOptionPane.INFORMATION_MESSAGE);
 	}
 }

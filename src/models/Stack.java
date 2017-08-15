@@ -3,6 +3,13 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Stack implementation using the Agenda interface
+ * 
+ * @author Oleksandr Kononov
+ * @version 10-08-2017
+ * @param <T>
+ */
 public class Stack<T> implements Agenda<T> {
 
 	List<T> list;
