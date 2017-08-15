@@ -26,17 +26,20 @@ _Format of the Maze File:_
 The first two numbers, seperated by a single space, are the rows and columns values respectively. Followed by the maze diagram.
 
 **Maze File Key:**
-| Character        | Square Type    | 
-| ---------------- |:-------------: |
-| **#**            | WALL           |
-| **.**            | OPEN           |
-| **o**            | START          |
-| __*__            | FINISH         |
+
+| Character | Square Type |
+|-----------|-------------|
+| #         | Wall        |
+| .         | Open        |
+| o         | Start       |
+| *         | Finish      |
+
 
 **Maze Square-Colour Key:**
-| Colour            | Square Type    | 
-| ----------------  |:-------------: |
-| **BLACK**         | WALL           |
-| **WHITE**         | OPEN           |
-| **GREEN**         | START          |
-| **RED**           | FINISH         |
+
+| Colour | Square Type |
+|--------|-------------|
+| Black  | Wall        |
+| White  | Open        |
+| Green  | Start       |
+| Red    | Finish      |
