@@ -1,5 +1,7 @@
 package models;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 import utils.Square;
@@ -17,17 +19,20 @@ import utils.Square;
 public class Maze {
 	
 	private Square[][] maze;
+	private Scanner input;
 	
 	/**
 	 * Initialise the maze size
 	 * @param rows
 	 * @param columns
 	 */
-	public Maze(Scanner input){
-		System.out.println("Input rows and columns Eg: 4 7\nInput: ");
-		int rows = Integer.valueOf(input.next());
-		int columns = Integer.valueOf(input.next());
-		maze = new Square[rows][columns];
+	public Maze(File mazeFile){
+		try {
+			input = new Scanner(mazeFile);
+		} catch (FileNotFoundException e) {
+			System.err.println("No File Found!");
+			return;
+		}
 		buildMaze(input);
 	}
 	
@@ -54,6 +59,22 @@ public class Maze {
 	 * @param input
 	 */
 	private void buildMaze(Scanner input){
+		
+		int rows = input.nextInt();
+		int columns = input.nextInt();
+		maze = new Square[rows][columns];
+		
+		int i = 0, j = 0;
+		
+		while(input.hasNext()){
+			for(char c : input.next().toCharArray()){
+				maze[i][j] = Square.fromChar(c);
+				j = ++j % columns;
+			}
+			++i;
+		}
+		
+		/*
 		System.out.println("MAZE MAP : \n'#' = Wall\n'.' = Open Space\n'o' = Start\n'*' = Finish\n");
 		String rowString = "";
 		for(int row = 0; row < maze.length; ++row){
@@ -63,7 +84,7 @@ public class Maze {
 				maze[row][column] = Square.fromChar(rowString.charAt(column));
 			}
 			rowString = "";
-		}
+		}*/
 	}
 	
 	@Override

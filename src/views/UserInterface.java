@@ -2,9 +2,12 @@ package views;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+
 import javax.swing.*;
 import javax.swing.border.*;
 
+import models.Maze;
 import utils.Square;
 
 /**
@@ -25,11 +28,13 @@ public class UserInterface implements ActionListener{
 	private JTextField rowsTextField;
 	private JTextField columnsTextField;
 	
+	private JLabel statusLabel;			//Will report to the user the status
+	
 	private JPanel mazePanel;			//Maze panel contains non-editable grid of text field
 										//used to display the maze to the user
 	
-	public UserInterface(int rows, int columns){
-		makeFrame(rows, columns);
+	public UserInterface(){
+		makeFrame(1,1);
 		frame.setVisible(true);
 	}
 	
@@ -45,14 +50,16 @@ public class UserInterface implements ActionListener{
 		rowsTextField = new JTextField("",5);
 		columnsTextField = new JTextField("",5);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		statusLabel = new JLabel("No Maze Loaded");
 		
 		JPanel contentPane = (JPanel)frame.getContentPane();
 		contentPane.setLayout(new BorderLayout(20, 20));
 		contentPane.setBorder(new EmptyBorder( 10, 10, 10, 10));
 		
 		///////////////Options///////////////
-		optionPanel = new JPanel(new GridLayout(2, 0));
+		optionPanel = new JPanel(new GridLayout(3, 0));
 		JPanel top = new JPanel(new GridLayout(1, 4));
+		JPanel middle = new JPanel(new FlowLayout());
 		JPanel bottom = new JPanel(new FlowLayout());
 		
 		addButton(top, "Stack Solution");
@@ -60,19 +67,23 @@ public class UserInterface implements ActionListener{
 		addButton(top, "About");
 		addButton(top, "Exit");
 		
-		bottom.add(new JLabel("Rows:"));
-		bottom.add(rowsTextField);
-		bottom.add(new JLabel("Columns:"));
-		bottom.add(columnsTextField);
-		addButton(bottom, "Resize");
+		middle.add(new JLabel("Rows:"));
+		middle.add(rowsTextField);
+		middle.add(new JLabel("Columns:"));
+		middle.add(columnsTextField);
+		addButton(middle, "Resize/Reset");
+		
+		bottom.add(statusLabel);
 		
 		optionPanel.add(top);
+		optionPanel.add(middle);
 		optionPanel.add(bottom);
 		/////////////////////////////////////
 		
 		
 		//Create the maze grid using row and column
-		makeMaze(rows, columns);
+		//makeMaze(rows, columns);
+		makeMaze(new Maze(new File("mazeTest")));
 		
 		
 		//Finalise frame
@@ -103,8 +114,9 @@ public class UserInterface implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		
-		if(command.equals("Resize")){		//Resize button pressed
-											//Resize maze with new rows and columns
+		if(command.equals("Resize/Reset")){		//Resize button pressed
+												//Resize maze with new rows and columns
+			if(rowsTextField.getText().isEmpty() || columnsTextField.getText().isEmpty()) return;
 			int newRows = Integer.parseInt(rowsTextField.getText());
 			int newColumns = Integer.parseInt(columnsTextField.getText());
 			resizeMaze(newRows, newColumns);
@@ -129,23 +141,45 @@ public class UserInterface implements ActionListener{
 	private void makeMaze(int rows, int columns){
 		
 		mazePanel = new JPanel(new GridLayout(rows,columns));
-		Font font = new Font("SansSerif", Font.BOLD, 20);
+		mazePanel.setPreferredSize(new Dimension(0,columns*100));
 		
 		//For every maze Square, setup it's values and parameters
 		for(int i = 0; i < rows*columns; ++i){
-			JTextField t = new JTextField(Square.WALL.toString());	//Set Square type to WALL
-			t.setForeground(Square.WALL.getColor());				//Set text colour
-			t.setFont(font);										//Set font
-			t.setHorizontalAlignment(JTextField.CENTER);			//Set text alignment to CENTER
+			JTextField t = new JTextField();						//Set Square type to WALL
+			t.setBackground(Square.WALL.getColor());				//Set text colour
 			t.setEditable(false);									//Set text field non-editable
 			t.setFocusable(false);									//Set text field non-focusable
-			
 			t.addMouseListener(new MouseAdapter(){					//Add mouse click listener
 				public void mouseReleased(MouseEvent e){			//To change Square type
 					changeSquareType(t);
 				}
 			});
 			mazePanel.add(t);
+		}
+	}
+	
+	/**
+	 * Makes a grid maze of non-editable, non-focusable text fields given the
+	 * constructed Maze object
+	 * 
+	 * @param maze A constructed Maze object
+	 */
+	private void makeMaze(Maze maze){
+		
+		int rows = maze.getMaze().length;
+		int columns = maze.getMaze()[0].length;
+		
+		mazePanel = new JPanel(new GridLayout(rows,columns));
+		mazePanel.setPreferredSize(new Dimension(0,columns*50));
+		
+		for(int i = 0; i < rows; ++i){
+			for (int j=0; j < columns; ++j){
+				JTextField t = new JTextField();
+				t.setBackground(maze.getMaze()[i][j].getColor());		//Set colour depending on Square type
+				t.setEditable(false);									//Set text field non-editable
+				t.setFocusable(false);									//Set text field non-focusable
+				mazePanel.add(t);
+			}
 		}
 	}
 	
@@ -169,14 +203,12 @@ public class UserInterface implements ActionListener{
 	 * @param t
 	 */
 	private void changeSquareType(JTextField t){
-		
 		//Loop through all Square types until you meet current type
 		//increment to next index and set it as new Square type
 		for(int i=0; i<Square.values().length; ++i){
-			if (t.getText().equals(Square.values()[i].toString())){
+			if (t.getBackground().equals(Square.values()[i].getColor())){
 				Square temp = (Square.values()[++i % Square.values().length]);
-				t.setForeground(temp.getColor());
-				t.setText(temp.toString());
+				t.setBackground(temp.getColor());
 				break;
 			}
 		}
@@ -192,10 +224,10 @@ public class UserInterface implements ActionListener{
 				"Description: Click on the square to change the square type, create a maze\n"+
 				"solve the maze by clicking the button\n\n"+
 				"Square Types:\n"+
-				"# = WALL\n"+
-				". = OPEN\n"+
-				"o = START\n"+
-				"* = FINISH\n";
+				"Black = WALL\n"+
+				"White = OPEN\n"+
+				"Green = START\n"+
+				"Red = FINISH\n";
 		JOptionPane.showMessageDialog(frame, about,"About",
 		        JOptionPane.INFORMATION_MESSAGE);
 	}

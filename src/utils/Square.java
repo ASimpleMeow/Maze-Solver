@@ -13,8 +13,8 @@ import java.awt.Color;
 
 public enum Square {
 	WALL ('#', Color.BLACK),
-	OPEN ('.', Color.BLUE),
-	START ('o', Color.ORANGE),
+	OPEN ('.', Color.WHITE),
+	START ('o', Color.GREEN),
 	FINISH ('*', Color.RED);
 	
 	private final char symbol;	//Symbol for square
@@ -25,6 +25,11 @@ public enum Square {
 		this.color = color;
 	}
 	
+	/**
+	 * Takes in a character and returns the equivalent Square type
+	 * @param ch Character
+	 * @return
+	 */
 	public static Square fromChar(char ch){
 		switch(ch){
 		case '#':
@@ -38,6 +43,20 @@ public enum Square {
 		default:
 			throw new IllegalArgumentException();
 		}
+	}
+	
+	/**
+	 * 	 
+	 * Takes in a color and returns the equivalent Square type
+	 * @param c Color
+	 * @return
+	 */
+	public static Square fromColor(Color c){
+		if(c.equals(Color.BLACK)) return WALL;
+		else if(c.equals(Color.WHITE)) return OPEN;
+		else if(c.equals(Color.GREEN)) return START;
+		else if(c.equals(Color.RED)) return FINISH;
+		throw new IllegalArgumentException();
 	}
 	
 	/**
