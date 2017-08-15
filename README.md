@@ -10,6 +10,7 @@
 + Resizeable maze grid
 + Colour coded squares
 + Click to change the square type
++ Save current maze to file
 
 **_Description:_**
 The MazeSolver program will solve mazes given either by a file or made there and then by clicking the various squares to change their type.

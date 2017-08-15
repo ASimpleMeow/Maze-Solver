@@ -3,6 +3,9 @@ package views;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -75,6 +78,7 @@ public class UserInterface implements ActionListener{
 		
 		middle.add(mazeFileTextField);
 		addButton(middle, "Load");
+		addButton(middle, "Save");
 		middle.add(new JLabel("Rows:"));
 		middle.add(rowsTextField);
 		middle.add(new JLabel("Columns:"));
@@ -145,6 +149,17 @@ public class UserInterface implements ActionListener{
 			Maze maze = new Maze(mazeFile);
 			makeMaze(maze);
 			displayText("A maze was loaded successfully");
+			
+		}else if(command.equals("Save")){	//Save button pressed
+											//Save the current maze to file
+			Maze maze = generateMaze();
+			String mazeString = maze.getMaze().length+" "+maze.getMaze()[0].length+"\n"+maze.toString();;
+			try (PrintStream out = new PrintStream(new FileOutputStream(mazeFileTextField.getText()))) {
+			    out.print(mazeString);
+			    out.close();
+			} catch (FileNotFoundException ex) {
+				ex.printStackTrace();
+			}
 			
 		}else if(command.equals("Stack Solution")){	//Stack Solution button pressed
 												   	//Solves current maze using Stack agenda
