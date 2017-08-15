@@ -63,6 +63,9 @@ public class MazeSolver {
 		}
 		
 		return false;
-		
+	}
+	
+	public List<Coordinate> getVisited(){
+		return visited;
 	}
 }

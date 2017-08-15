@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 
 import models.Maze;
+import models.MazeSolver;
 import utils.Square;
 
 /**
@@ -25,6 +26,8 @@ public class UserInterface implements ActionListener{
 	private JFrame frame;
 	
 	private JPanel optionPanel;			//Option panel which contains buttons and text fields
+	
+	private JTextField mazeFileTextField;
 	private JTextField rowsTextField;
 	private JTextField columnsTextField;
 	
@@ -34,23 +37,26 @@ public class UserInterface implements ActionListener{
 										//used to display the maze to the user
 	
 	public UserInterface(){
-		makeFrame(1,1);
+		makeFrame();
 		frame.setVisible(true);
 	}
 	
 	/**
 	 * Create a JFrame window and setup all it's respective panels
+	 * using default - 5 row 5 column
 	 * 
 	 * @param rows Integer value for rows the maze has
 	 * @param columns Integer value for columns the maze has
 	 */
-	private void makeFrame(int rows, int columns){
+	private void makeFrame(){
 		
 		frame = new JFrame("Maze Solver");
-		rowsTextField = new JTextField("",5);
-		columnsTextField = new JTextField("",5);
+		mazeFileTextField = new JTextField("", 7);
+		rowsTextField = new JTextField("5",5);
+		columnsTextField = new JTextField("5",5);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		statusLabel = new JLabel("No Maze Loaded");
+		statusLabel = new JLabel();
+		displayText("No maze loaded");
 		
 		JPanel contentPane = (JPanel)frame.getContentPane();
 		contentPane.setLayout(new BorderLayout(20, 20));
@@ -67,6 +73,8 @@ public class UserInterface implements ActionListener{
 		addButton(top, "About");
 		addButton(top, "Exit");
 		
+		middle.add(mazeFileTextField);
+		addButton(middle, "Load");
 		middle.add(new JLabel("Rows:"));
 		middle.add(rowsTextField);
 		middle.add(new JLabel("Columns:"));
@@ -82,9 +90,8 @@ public class UserInterface implements ActionListener{
 		
 		
 		//Create the maze grid using row and column
-		//makeMaze(rows, columns);
-		makeMaze(new Maze(new File("mazeTest")));
-		
+		makeMaze(5, 5);
+		//makeMaze(new Maze(new File("mazeTest")));
 		
 		//Finalise frame
 		contentPane.add(optionPanel, BorderLayout.NORTH);
@@ -120,15 +127,60 @@ public class UserInterface implements ActionListener{
 			int newRows = Integer.parseInt(rowsTextField.getText());
 			int newColumns = Integer.parseInt(columnsTextField.getText());
 			resizeMaze(newRows, newColumns);
+			displayText("Maze Resized and Reset");
+			
 		}else if(command.equals("Exit")){	//Exit button pressed
 											//Close frame and exit program
 			frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 			System.exit(0);
+			
 		}else if(command.equals("About")){	//About button pressed
 											//Display the about information about MazeSolver
 			openAbout();
+			
+		}else if(command.equals("Load")){	//Load button pressed
+											//Load maze from file and build maze
+			File mazeFile = new File(mazeFileTextField.getText());
+			if(!mazeFile.exists()) return;
+			Maze maze = new Maze(mazeFile);
+			makeMaze(maze);
+			displayText("A maze was loaded successfully");
+			
+		}else if(command.equals("Stack Solution")){	//Stack Solution button pressed
+												   	//Solves current maze using Stack agenda
+			Maze maze = generateMaze();
+			MazeSolver solver = new MazeSolver(maze,true);
+			displayText("Is the maze solvable? : "+String.valueOf(solver.solveMaze()));
+			
+		}else if(command.equals("Stack Solution")){	//Queue Solution button pressed
+													//Solves current maze Queue agenda
+			Maze maze = generateMaze();
+			MazeSolver solver = new MazeSolver(maze,false);
+			displayText("Is the maze solvable? : "+String.valueOf(solver.solveMaze()));
 		}
 		
+	}
+	
+	/**
+	 * Generates a Maze object based on the mazePanel grid
+	 * at the time of this methods call
+	 * @return
+	 */
+	private Maze generateMaze(){
+		GridLayout grid = (GridLayout) mazePanel.getLayout();
+		int rows = grid.getRows(), columns = grid.getColumns();
+		Square[][] maze = new Square[rows][columns];
+		int i=0, j=0;
+		
+		for(Component t : mazePanel.getComponents()){
+			maze[i][j] = Square.fromColor(t.getBackground());
+			if( (j+1)%columns == 0 ){
+				++i;
+			}
+			j = ++j % columns;
+		}
+		
+		return new Maze(maze);
 	}
 	
 	/**
@@ -141,7 +193,7 @@ public class UserInterface implements ActionListener{
 	private void makeMaze(int rows, int columns){
 		
 		mazePanel = new JPanel(new GridLayout(rows,columns));
-		mazePanel.setPreferredSize(new Dimension(0,columns*100));
+		mazePanel.setPreferredSize(new Dimension(1,columns*100));
 		
 		//For every maze Square, setup it's values and parameters
 		for(int i = 0; i < rows*columns; ++i){
@@ -166,11 +218,14 @@ public class UserInterface implements ActionListener{
 	 */
 	private void makeMaze(Maze maze){
 		
+		mazePanel.setVisible(false);
+		frame.getContentPane().remove(mazePanel);
+		
 		int rows = maze.getMaze().length;
 		int columns = maze.getMaze()[0].length;
 		
 		mazePanel = new JPanel(new GridLayout(rows,columns));
-		mazePanel.setPreferredSize(new Dimension(0,columns*50));
+		mazePanel.setPreferredSize(new Dimension(1,columns*50));
 		
 		for(int i = 0; i < rows; ++i){
 			for (int j=0; j < columns; ++j){
@@ -181,6 +236,10 @@ public class UserInterface implements ActionListener{
 				mazePanel.add(t);
 			}
 		}
+		
+		frame.getContentPane().add(mazePanel);
+		frame.getContentPane().invalidate();
+		frame.getContentPane().validate();
 	}
 	
 	/**
@@ -230,5 +289,9 @@ public class UserInterface implements ActionListener{
 				"Red = FINISH\n";
 		JOptionPane.showMessageDialog(frame, about,"About",
 		        JOptionPane.INFORMATION_MESSAGE);
+	}
+	
+	private void displayText(String text){
+		statusLabel.setText("Status : " + text);
 	}
 }

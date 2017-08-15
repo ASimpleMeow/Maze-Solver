@@ -22,7 +22,7 @@ public class Maze {
 	private Scanner input;
 	
 	/**
-	 * Initialise the maze size
+	 * Create maze object from File given
 	 * @param rows
 	 * @param columns
 	 */
@@ -34,6 +34,15 @@ public class Maze {
 			return;
 		}
 		buildMaze(input);
+	}
+	
+	/**
+	 * Create maze object from 2D Square array given
+	 * 
+	 * @param maze 2 dimensional Square array
+	 */
+	public Maze(Square[][] maze){
+		this.maze = maze;
 	}
 	
 	/**

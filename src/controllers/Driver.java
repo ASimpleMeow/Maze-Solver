@@ -1,7 +1,5 @@
 package controllers;
 
-import java.io.File;
-
 import models.Maze;
 import models.MazeSolver;
 import views.UserInterface;
