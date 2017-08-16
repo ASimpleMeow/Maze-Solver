@@ -9,22 +9,23 @@ public class MazeSolver {
 
 	Agenda<Coordinate> agenda;
 	List<Coordinate> visited;
+	Coordinate start;
 	Maze maze;
 	
 	public MazeSolver(Maze maze, boolean solveStack){
 		agenda = (solveStack ? new Stack<Coordinate>() : new Queue<Coordinate>());
 		visited = new ArrayList<Coordinate>();
 		this.maze = maze;
-	}
-	
-	public boolean solveMaze(){
-		Coordinate start = maze.getStart();
+		start = maze.getStart();
 		if(start != null){
 			agenda.add(start);
 			visited.add(start);
 		}
+	}
+	
+	public boolean solveMaze(boolean step){
 		
-		while(!agenda.isEmpty()){
+		while(!agenda.isEmpty() && step){
 			Coordinate currentLocation = agenda.remove();
 			if(!visited.contains(currentLocation)){
 				if (maze.getMaze()[currentLocation.getRow()][currentLocation.getColumn()] == Square.FINISH){
@@ -60,6 +61,7 @@ public class MazeSolver {
 			}
 			
 			visited.add(currentLocation);
+			step = false;
 		}
 		
 		return false;
@@ -67,5 +69,9 @@ public class MazeSolver {
 	
 	public List<Coordinate> getVisited(){
 		return visited;
+	}
+	
+	public boolean isAgendaEmpty(){
+		return agenda.isEmpty();
 	}
 }

@@ -6,10 +6,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.*;
 
+import models.Coordinate;
 import models.Maze;
 import models.MazeSolver;
 import utils.Square;
@@ -24,7 +26,7 @@ import utils.Square;
  *
  */
 
-public class UserInterface implements ActionListener{
+public class UserInterface implements ActionListener, Runnable{
 	
 	private JFrame frame;
 	
@@ -39,9 +41,35 @@ public class UserInterface implements ActionListener{
 	private JPanel mazePanel;			//Maze panel contains non-editable grid of text field
 										//used to display the maze to the user
 	
+	private Thread solveSolution;
+	private boolean solveStack;
+	private boolean step;
+	private boolean animation;
+	
 	public UserInterface(){
 		makeFrame();
+		solveStack = false;
+		step = false;
+		animation = false;
+		solveSolution = new Thread(this);
 		frame.setVisible(true);
+	}
+	
+	/**
+	 * A separate thread which handles solving the maze,
+	 * the reason for this thread is to allow the user to continue using 
+	 * the program (eg. Pressing the Step button) while the maze is being solved.
+	 */
+	@Override
+	public void run() {
+		if(solveStack){
+			displayText("Stack solution in progress");
+		}else{
+			displayText("Queue solution in progress");
+		}
+		Maze maze = generateMaze();
+		MazeSolver solver = new MazeSolver(maze,solveStack);
+		displayText("Is the maze solvable (Stack): "+String.valueOf(findingSolution(solver)));
 	}
 	
 	/**
@@ -67,12 +95,14 @@ public class UserInterface implements ActionListener{
 		
 		///////////////Options///////////////
 		optionPanel = new JPanel(new GridLayout(3, 0));
-		JPanel top = new JPanel(new GridLayout(1, 4));
+		JPanel top = new JPanel(new GridLayout(1, 6));
 		JPanel middle = new JPanel(new FlowLayout());
 		JPanel bottom = new JPanel(new FlowLayout());
 		
-		addButton(top, "Stack Solution");
-		addButton(top, "Queue Solution");
+		addButton(top, "Stack");
+		addButton(top, "Queue");
+		addButton(top, "Step");
+		addButton(top, "Toggle Animation");
 		addButton(top, "About");
 		addButton(top, "Exit");
 		
@@ -95,7 +125,6 @@ public class UserInterface implements ActionListener{
 		
 		//Create the maze grid using row and column
 		makeMaze(5, 5);
-		//makeMaze(new Maze(new File("mazeTest")));
 		
 		//Finalise frame
 		contentPane.add(optionPanel, BorderLayout.NORTH);
@@ -157,23 +186,61 @@ public class UserInterface implements ActionListener{
 			try (PrintStream out = new PrintStream(new FileOutputStream(mazeFileTextField.getText()))) {
 			    out.print(mazeString);
 			    out.close();
+			    displayText("Maze saved successfully");
 			} catch (FileNotFoundException ex) {
 				ex.printStackTrace();
 			}
 			
-		}else if(command.equals("Stack Solution")){	//Stack Solution button pressed
+		}else if(command.equals("Stack")){	//Stack Solution button pressed
 												   	//Solves current maze using Stack agenda
-			Maze maze = generateMaze();
-			MazeSolver solver = new MazeSolver(maze,true);
-			displayText("Is the maze solvable? : "+String.valueOf(solver.solveMaze()));
+			if(solveSolution.isAlive()) return;
+			solveStack = true;
+			solveSolution.start();
 			
-		}else if(command.equals("Stack Solution")){	//Queue Solution button pressed
+		}else if(command.equals("Queue")){	//Queue Solution button pressed
 													//Solves current maze Queue agenda
-			Maze maze = generateMaze();
-			MazeSolver solver = new MazeSolver(maze,false);
-			displayText("Is the maze solvable? : "+String.valueOf(solver.solveMaze()));
+			if(solveSolution.isAlive()) return;
+			solveStack = false;
+			solveSolution.start();
+		}else if(command.equals("Step")){	//Step button pressed
+											//Allows the MazeSolver to progress a step forward
+			if(solveSolution.isAlive())
+				step = true;
 		}
 		
+	}
+	
+	public boolean findingSolution(MazeSolver solver){
+		
+		while(!solver.isAgendaEmpty()){
+			if(solver.solveMaze(step))
+				return true;
+			step = false;
+			updateSquares(solver.getVisited());
+		}
+		
+		return false;
+	}
+	
+	private void updateSquares(List<Coordinate> visited){
+		GridLayout grid = (GridLayout) mazePanel.getLayout();
+		int columns = grid.getColumns();
+		int i=0, j=0;
+		
+		for(Component t : mazePanel.getComponents()){
+			
+			for(Coordinate c : visited){
+				if(c.getRow() == i && c.getColumn() == j && t.getBackground().equals(Color.WHITE)){
+					t.setBackground(Color.DARK_GRAY);
+					break;
+				}
+			}
+			
+			if( (j+1)%columns == 0 ){
+				++i;
+			}
+			j = ++j % columns;
+		}
 	}
 	
 	/**

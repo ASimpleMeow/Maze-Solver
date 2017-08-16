@@ -11,9 +11,12 @@
 + Colour coded squares
 + Click to change the square type
 + Save current maze to file
++ Step by Step animation button
 
 **_Description:_**
 The MazeSolver program will solve mazes given either by a file or made there and then by clicking the various squares to change their type.
+The user can choose to use either Queue or Stack algorithms and a step by step animation will be show - alternitively, toggling the animation 
+can play the animation of the maze being solved without the user having to press the Step button each step. 
 
 _Format of the Maze File:_
 ```
