@@ -42,6 +42,7 @@ public class UserInterface implements ActionListener, Runnable{
 										//used to display the maze to the user
 	
 	private Thread solveSolution;
+	private Timer animationTimer;
 	private boolean solveStack;
 	private boolean step;
 	private boolean animation;
@@ -51,6 +52,15 @@ public class UserInterface implements ActionListener, Runnable{
 		solveStack = false;
 		step = false;
 		animation = false;
+		animationTimer = new Timer(120, new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent act) {
+				step = !step;
+				
+			}
+			
+		});
 		solveSolution = new Thread(this);
 		frame.setVisible(true);
 	}
@@ -70,6 +80,7 @@ public class UserInterface implements ActionListener, Runnable{
 		Maze maze = generateMaze();
 		MazeSolver solver = new MazeSolver(maze,solveStack);
 		displayText("Is the maze solvable (Stack): "+String.valueOf(findingSolution(solver)));
+		animationTimer.stop();
 	}
 	
 	/**
@@ -161,6 +172,7 @@ public class UserInterface implements ActionListener, Runnable{
 			int newColumns = Integer.parseInt(columnsTextField.getText());
 			resizeMaze(newRows, newColumns);
 			displayText("Maze Resized and Reset");
+			if(solveSolution.getState() == Thread.State.TERMINATED) solveSolution = new Thread(this);
 			
 		}else if(command.equals("Exit")){	//Exit button pressed
 											//Close frame and exit program
@@ -178,6 +190,7 @@ public class UserInterface implements ActionListener, Runnable{
 			Maze maze = new Maze(mazeFile);
 			makeMaze(maze);
 			displayText("A maze was loaded successfully");
+			if(solveSolution.getState() == Thread.State.TERMINATED) solveSolution = new Thread(this);
 			
 		}else if(command.equals("Save")){	//Save button pressed
 											//Save the current maze to file
@@ -192,20 +205,31 @@ public class UserInterface implements ActionListener, Runnable{
 			}
 			
 		}else if(command.equals("Stack")){	//Stack Solution button pressed
-												   	//Solves current maze using Stack agenda
-			if(solveSolution.isAlive()) return;
+											//Solves current maze using Stack agenda
+			if(solveSolution.isAlive() || solveSolution.getState() == Thread.State.TERMINATED)
+				return;
 			solveStack = true;
 			solveSolution.start();
+			if (animation) animationTimer.start();
 			
 		}else if(command.equals("Queue")){	//Queue Solution button pressed
-													//Solves current maze Queue agenda
-			if(solveSolution.isAlive()) return;
+											//Solves current maze Queue agenda
+			if(solveSolution.isAlive() || solveSolution.getState() == Thread.State.TERMINATED)
+				return;
 			solveStack = false;
 			solveSolution.start();
+			if(animation) animationTimer.start();
+			
 		}else if(command.equals("Step")){	//Step button pressed
 											//Allows the MazeSolver to progress a step forward
 			if(solveSolution.isAlive())
 				step = true;
+			
+		}else if(command.equals("Toggle Animation")){	//Toggle Animation pressed
+														//Allows MazeSolver to solve with animation
+			animation = !animation;
+			displayText("Toggled animation");
+			
 		}
 		
 	}
@@ -285,7 +309,8 @@ public class UserInterface implements ActionListener, Runnable{
 			t.setFocusable(false);									//Set text field non-focusable
 			t.addMouseListener(new MouseAdapter(){					//Add mouse click listener
 				public void mouseReleased(MouseEvent e){			//To change Square type
-					changeSquareType(t);
+					if(!solveSolution.isAlive())
+						changeSquareType(t);
 				}
 			});
 			mazePanel.add(t);
@@ -374,6 +399,6 @@ public class UserInterface implements ActionListener, Runnable{
 	}
 	
 	private void displayText(String text){
-		statusLabel.setText("Status : " + text);
+		statusLabel.setText("Status : " + text+"            Animation : "+animation);
 	}
 }
